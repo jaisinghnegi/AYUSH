@@ -1,0 +1,500 @@
+.global-search-container {
+  width: 100%;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  position: relative;
+}
+
+.search-title {
+  color: #1f2937;
+  font-size: 18px;
+  font-weight: 600;
+  margin-bottom: 16px;
+  margin-left: 10px;
+  margin-top: 0;
+}
+
+.search-input-container {
+  position: relative;
+  margin-bottom: 12px;
+}
+
+.search-input {
+  width: 100%;
+  /* MODIFICATION: Added more padding-right to accommodate both buttons */
+  padding: 12px 85px 12px 16px;
+  border: 2px solid #57D24B;
+  border-radius: 0 25px 25px 0;
+  font-size: 14px;
+  color: #2d3748;
+  background-color: #ffffff;
+  box-sizing: border-box;
+  outline: none;
+  transition: border-color 0.2s ease;
+}
+
+/* Voice Search Button Styles */
+.voice-search-btn {
+  position: absolute;
+  right: 52px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  padding: 4px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  transition: all 0.2s ease;
+}
+
+.voice-search-btn svg {
+  stroke: #57D24B;
+  transition: stroke 0.2s ease;
+}
+
+.voice-search-btn:hover {
+  background-color: rgba(87, 210, 75, 0.1);
+}
+
+.voice-search-btn:hover svg {
+  stroke: #48bb78;
+}
+
+.voice-search-btn.listening {
+  background-color: #57D24B;
+  animation: voicePulse 2s infinite;
+}
+
+.voice-search-btn.listening svg {
+  stroke: white;
+}
+
+@keyframes voicePulse {
+  0% {
+    box-shadow: 0 0 0 0 rgba(87, 210, 75, 0.7);
+  }
+  70% {
+    box-shadow: 0 0 0 10px rgba(87, 210, 75, 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(87, 210, 75, 0);
+  }
+}
+
+/* Search Submit Button - Modified positioning */
+.search-submit-btn {
+  position: absolute;
+  right: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  padding: 4px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.search-submit-btn svg {
+  stroke: #a0aec0;
+  transition: stroke 0.2s ease;
+}
+
+.search-submit-btn:hover svg {
+  stroke: #2d3748;
+}
+
+/* Voice Search Overlay Styles */
+.voice-search-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.7);
+  backdrop-filter: blur(5px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+  animation: overlayFadeIn 0.3s ease-out;
+}
+
+.voice-search-modal {
+  background: white;
+  border-radius: 24px;
+  padding: 40px;
+  text-align: center;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+  width: 90%;
+  max-width: 400px;
+  animation: modalSlideUp 0.3s ease-out;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.voice-animation-container {
+  position: relative;
+  width: 150px;
+  height: 150px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 30px;
+}
+
+.voice-pulse-ring {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 150px;
+  height: 150px;
+  border: 2px solid #57D24B;
+  border-radius: 50%;
+  /* The animation now handles scale and opacity */
+  animation: sonarEffect 2.4s infinite cubic-bezier(0.2, 0.8, 0.2, 1);
+  opacity:0;
+}
+
+.voice-pulse-ring.delay-1 {
+  animation-delay: 0.8s;
+}
+.voice-pulse-ring.delay-2 {
+  animation-delay: 1.6s;
+}
+
+@keyframes sonarEffect {
+  0% {
+    transform: translate(-50%, -50%) scale(0);
+    opacity: 0.8;
+  }
+  100% {
+    transform: translate(-50%, -50%) scale(1);
+    opacity: 0;
+  }
+}
+
+.voice-microphone-icon {
+  position: relative;
+  z-index: 10;
+  background: #57D24B;
+  border-radius: 50%;
+  width: 70px;
+  height: 70px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  animation: microphonePulse 2.5s infinite ease-in-out;
+}
+
+.voice-microphone-icon svg {
+  stroke: white;
+}
+
+@keyframes microphonePulse {
+  0%,
+  100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.05);
+  }
+}
+
+.voice-search-title {
+  color: #57D24B;
+  font-size: 24px;
+  font-weight: 600;
+  margin: 0 0 8px 0;
+}
+
+.voice-search-subtitle {
+  color: #666;
+  font-size: 16px;
+  margin: 0 0 30px 0;
+}
+
+.voice-cancel-btn {
+  background: #f5f5f5;
+  border: 2px solid #ddd;
+  color: #666;
+  padding: 10px 30px;
+  border-radius: 25px;
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.voice-cancel-btn:hover {
+  background: #e0e0e0;
+  border-color: #bbb;
+}
+
+@keyframes overlayFadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes modalSlideUp {
+  from {
+    opacity: 0;
+    transform: translateY(50px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.search-input::placeholder {
+  color: #a0aec0;
+}
+
+.search-input:focus {
+  border-color: #57D24B;
+  box-shadow: 0 0 0 3px rgba(72, 187, 120, 0.1);
+}
+
+.search-controls {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+}
+
+.filters-section {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.filters-btn {
+  background-color: #3182ce;
+  color: white;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 20px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.filters-btn:hover,
+.filters-btn.active {
+  background-color: #2c5aa0;
+}
+
+.filter-count {
+  background-color: rgba(255, 255, 255, 0.3);
+  border-radius: 50%;
+  padding: 2px 6px;
+  font-size: 12px;
+  min-width: 18px;
+  text-align: center;
+}
+
+.results-count {
+  background-color: #57D24B;
+  color: white;
+  padding: 8px 16px;
+  border-radius: 20px;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.clear-all-btn {
+  background: none;
+  border: none;
+  color: #1f2937;
+  font-size: 14px;
+  cursor: pointer;
+  padding: 8px 12px;
+  border-radius: 4px;
+  transition: color 0.2s ease;
+}
+
+.clear-all-btn:hover {
+  color: #2d3748;
+  background-color: #f7fafc;
+}
+
+.filters-dropdown {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  background: white;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  z-index: 1000;
+  margin-top: 4px;
+  animation: fadeIn 0.2s ease-out;
+}
+
+.filters-content {
+  padding: 16px;
+  max-height: 300px;
+  overflow-y: auto;
+}
+
+.filter-category {
+  margin-bottom: 20px;
+}
+
+.filter-category:last-child {
+  margin-bottom: 0;
+}
+
+.filter-category h4 {
+  margin: 0 0 12px 0;
+  font-size: 14px;
+  font-weight: 600;
+  color: #2d3748;
+  border-bottom: 1px solid #e2e8f0;
+  padding-bottom: 8px;
+}
+
+.filter-option {
+  display: flex;
+  align-items: center;
+  padding: 8px 0;
+  cursor: pointer;
+}
+
+.filter-option input[type="checkbox"] {
+  margin-right: 10px;
+  width: 16px;
+  height: 16px;
+  accent-color: #48bb78;
+}
+
+.filter-label {
+  font-size: 14px;
+  color: #4a5568;
+  user-select: none;
+}
+
+.organ-system-select {
+  width: 100%;
+  padding: 8px 12px;
+  border: 1px solid #e2e8f0;
+  border-radius: 4px;
+  font-size: 14px;
+  color: #4a5568;
+  background-color: white;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* --- Dark Theme Styles --- */
+body.dark-theme .search-title {
+color: #FFFFFF; 
+}
+body.dark-theme .search-input {
+background-color: #1A1A1A; 
+color: #CCCCCC; 
+border-color: #2F2F2F; 
+}
+body.dark-theme .search-input::placeholder {
+color: #999999; 
+}
+body.dark-theme .clear-all-btn {
+color: #CCCCCC;
+}
+body.dark-theme .clear-all-btn:hover {
+color: #FFFFFF;
+background-color: #1A1A1A;
+}
+
+/* Dark theme for voice search overlay */
+body.dark-theme .voice-search-modal {
+background: #1A1A1A;
+color: #CCCCCC;
+}
+
+body.dark-theme .voice-search-title {
+color: #57D24B;
+}
+
+body.dark-theme .voice-search-subtitle {
+color: #999999;
+}
+
+body.dark-theme .voice-cancel-btn {
+background: #2F2F2F;
+border-color: #444;
+color: #CCCCCC;
+}
+
+body.dark-theme .voice-cancel-btn:hover {
+background: #333;
+border-color: #555;
+}
+
+/* Styling for the new search type dropdown */
+.search-type-selector {
+  display: flex;
+  align-items: center;
+  border-right: none;
+  border-radius: 25px 0 0 25px;
+  font-size: 14px;
+  color: #2d3748;
+  background-color: #ffffff;
+  padding: 12px 12px 12px 16px;
+  border: 2px solid #57D24B;
+  max-width: 100px;
+}
+
+.search-type-dropdown {
+  background-color: transparent;
+  border: none;
+  padding: 0 10px;
+  height: 100%;
+  font-size: 16px;
+  color: #555;
+  cursor: pointer;
+  -webkit-appearance: none; 
+  -moz-appearance: none; 
+  appearance: none;
+}
+
+.search-type-dropdown:focus {
+  outline: none;
+}
+
+.search-input-container .search-input {
+  border-left: none;
+}
+
+.search-input-container {
+  display: flex;
+  overflow: hidden; 
+}
+
+body.dark-theme .search-type-selector {
+  background-color: #1A1A1A; 
+  color: #CCCCCC; 
+  border-color: #2F2F2F;
+}

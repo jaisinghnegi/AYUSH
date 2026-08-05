@@ -1,0 +1,551 @@
+.composer-wrapper {
+  width: 100%;
+  max-width: 600px;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.composer-title {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 10px;
+  flex-shrink: 0;
+}
+
+.green-line {
+  width: 4px;
+  height: 24px;
+  background-color: #57D24B;
+  border-radius: 2px;
+}
+
+.composer-title h2 {
+  margin: 0;
+  font-size: 20px;
+  font-weight: 600;
+  color: #1f2937;
+}
+
+.composer-container {
+  width: 100%;
+  background: white;
+  border: 2px solid #57D24B;
+  border-radius: 12px;
+  font-family: 'Arial', sans-serif;
+  display: flex;
+  flex-direction: column;
+  flex-grow: 1;
+  overflow: hidden; 
+}
+
+.composer-content {
+  flex: 1;
+  padding: 20px 20px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  overflow: hidden;
+}
+
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+}
+
+.empty-icon {
+  position: relative;
+  margin-bottom: 20px;
+}
+
+.hamburger-lines {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin-bottom: 8px;
+}
+
+.hamburger-lines .line {
+  height: 3px;
+  background-color: #d1d5db;
+  border-radius: 2px;
+}
+
+.hamburger-lines .line:nth-child(1) {
+  width: 40px;
+}
+
+.hamburger-lines .line:nth-child(2) {
+  width: 32px;
+}
+
+.hamburger-lines .line:nth-child(3) {
+  width: 36px;
+}
+
+.plus-icon {
+  position: absolute;
+  top: 50%;
+  right: -15px;
+  transform: translateY(-50%);
+  font-size: 20px;
+  color: #d1d5db;
+  font-weight: bold;
+}
+
+.empty-text {
+  color: #9ca3af;
+  font-size: 14px;
+  margin: 0;
+  max-width: 250px;
+  line-height: 1.4;
+}
+
+.composer-footer {
+  padding: 20px;
+  position: relative;
+  flex-shrink: 0;
+}
+
+.download-btn {
+  width: 100%;
+  background-color: #57D24B;
+  color: white;
+  border: none;
+  padding: 14px 16px;
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  transition: all 0.2s;
+}
+
+.download-btn:hover {
+  background-color: #4dbf42;
+}
+
+.download-btn:disabled {
+  background-color: #9ca3af;
+  cursor: not-allowed;
+}
+
+.download-icon {
+  width: 18px;
+  height: 18px;
+  color: white;
+}
+
+.download-dropdown {
+  position: absolute;
+  bottom: 100%;
+  left: 20px;
+  right: 20px;
+  background: white;
+  border: 1px solid #e5e7eb;
+  border-radius: 6px;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+  margin-bottom: 8px;
+  z-index: 100;
+  overflow: hidden;
+  animation: slideUp 0.2s ease-out;
+}
+
+.dropdown-item {
+  width: 100%;
+  background: none;
+  border: none;
+  padding: 12px 16px;
+  text-align: left;
+  font-size: 14px;
+  color: #374151;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.dropdown-item:hover {
+  background-color: #f3f4f6;
+}
+
+.dropdown-item:not(:last-child) {
+  border-bottom: 1px solid #f3f4f6;
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* --- STYLES FOR POPULATED COMPOSER LIST --- */
+.composer-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  width: 100%;
+  height: 100%;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.composer-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background-color: #f9fafb;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  padding: 10px 12px;
+  animation: fadeIn 0.3s ease-out;
+}
+
+.composer-item:hover {
+  background-color: #f3f4f6; 
+  border-color: #d1d5db;
+}
+
+.remove-btn {
+  color: #d1d5db;
+}
+
+.composer-item:hover .remove-btn {
+  color: #ef4444; 
+}
+
+.item-details {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.item-title {
+  font-size: 14px;
+  font-weight: 500;
+  color: #1f2937;
+}
+
+.item-code {
+  font-size: 12px;
+  color: #6b7280;
+  font-family: monospace;
+}
+
+.remove-btn {
+  background: none;
+  border: none;
+  color: #9ca3af;
+  font-size: 24px;
+  line-height: 1;
+  cursor: pointer;
+  padding: 0 4px;
+  transition: color 0.2s ease;
+}
+
+.remove-btn:hover {
+  color: #ef4444;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-5px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Patient Information Section */
+.patient-info-section {
+  margin-bottom: 15px;
+}
+
+.patient-info-btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;  
+  padding: 10px 15px;
+  background-color: #ffffff;
+  border: 1px solid #57D24B;
+  border-radius: 8px;
+  color: #57D24B;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+  margin-bottom: 10px;
+}
+
+.patient-info-btn:hover {
+  background-color: #f0f9ff;
+  border-color: #57D24B;
+}
+
+.patient-icon {
+  width: 18px;
+  height: 18px;
+}
+
+/* Patient Information Display */
+.patient-info-display {
+  background-color: #f9fafb;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  padding: 15px;
+  position: relative;
+  margin-top: 10px;
+}
+
+.patient-info-display h4 {
+  margin: 0 0 10px 0;
+  color: #374151;
+  font-size: 16px;
+}
+
+.patient-info-display p {
+  margin: 5px 0;
+  color: #6b7280;
+  font-size: 14px;
+}
+
+.clear-patient-info {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  background: none;
+  border: none;
+  font-size: 20px;
+  cursor: pointer;
+  color: #6b7280;
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 4px;
+}
+
+.clear-patient-info:hover {
+  background-color: #fee2e2;
+  color: #ef4444;
+}
+
+/* Patient Popup */
+.patient-popup-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+.patient-popup {
+  background-color: white;
+  border-radius: 12px;
+  width: 90%;
+  max-width: 450px;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+  overflow: hidden;
+}
+
+.popup-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 15px 20px;
+  background-color: #57D24B;
+  color: white;
+}
+
+.popup-header h3 {
+  margin: 0;
+  font-size: 18px;
+}
+
+.close-popup {
+  background: none;
+  border: none;
+  color: white;
+  font-size: 24px;
+  cursor: pointer;
+  padding: 0;
+  width: 30px;
+  height: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.popup-content {
+  padding: 20px;
+}
+
+.input-group {
+  margin-bottom: 15px;
+}
+
+.input-group label {
+  display: block;
+  margin-bottom: 5px;
+  font-weight: 500;
+  color: #374151;
+}
+
+.input-group input {
+  width: 100%;
+  padding: 10px;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  font-size: 14px;
+  box-sizing: border-box;
+}
+
+.input-group input:focus {
+  outline: none;
+  border-color: #57D24B;
+}
+
+.save-patient-btn {
+  width: 100%;
+  padding: 12px;
+  background-color: #57D24B;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  font-weight: 600;
+  cursor: pointer;
+  margin-top: 10px;
+}
+
+.save-patient-btn:hover {
+  background-color: #4abf3f;
+}
+
+/* PDF Logo Styles */
+.logo-img {
+  width: 100px;
+  height: auto;
+  margin-left: 20px;
+}
+
+/* --- Dark Theme Styles --- */
+body.dark-theme .composer-title h2 {
+  color: #FFFFFF;
+}
+body.dark-theme .composer-container {
+  background: #1A1A1A;
+  border-color: #2F2F2F;
+}
+body.dark-theme .patient-info-btn {
+    background-color: #1A1A1A;
+    border-color: #2F2F2F;
+    color: #57D24B;
+}
+body.dark-theme .patient-info-display {
+    background-color: #2F2F2F;
+    border-color: #444;
+}
+body.dark-theme .patient-info-display h4 {
+    color: #FFFFFF;
+}
+body.dark-theme .patient-info-display p {
+    color: #CCCCCC;
+}
+body.dark-theme .clear-patient-info {
+    color: #CCCCCC;
+}
+body.dark-theme .clear-patient-info:hover {
+    color: #ef4444;
+}
+body.dark-theme .empty-text {
+  color: #999999;
+}
+body.dark-theme .composer-item {
+  background-color: #2F2F2F;
+  border-color: #444;
+}
+body.dark-theme .item-title {
+  color: #FFFFFF;
+}
+body.dark-theme .item-code {
+  color: #CCCCCC;
+}
+
+/* MODIFICATION: Added dark theme styles for the Patient Information popup */
+body.dark-theme .patient-popup-overlay {
+  background-color: rgba(0, 0, 0, 0.7);
+}
+body.dark-theme .patient-popup {
+  background-color: #1A1A1A;
+}
+body.dark-theme .popup-header {
+  background-color: #2F2F2F;
+}
+body.dark-theme .popup-header h3 {
+  color: #FFFFFF;
+}
+body.dark-theme .close-popup {
+  color: #CCCCCC;
+}
+body.dark-theme .input-group label {
+  color: #CCCCCC;
+}
+body.dark-theme .input-group input {
+  background-color: #2F2F2F;
+  color: #CCCCCC;
+  border-color: #444;
+}
+body.dark-theme .input-group input::placeholder {
+  color: #999999;
+}
+body.dark-theme .save-patient-btn {
+    background-color: #57D24B;
+    color: #ffffff;
+}
+
+/* Responsive styles for mobile */
+@media (max-width: 768px) {
+  .composer-wrapper {
+    max-width: 100%;
+  }
+  
+  .composer-container {
+    border-radius: 8px;
+  }
+  
+  .composer-content {
+    padding: 15px;
+  }
+  
+  .composer-footer {
+    padding: 15px;
+  }
+  
+  .download-dropdown {
+    left: 15px;
+    right: 15px;
+  }
+}
+
+ 

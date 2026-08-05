@@ -1,0 +1,28 @@
+# OS files
+.DS_Store
+Thumbs.db
+
+# Node / npm / yarn / pnpm logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Environment files
+.env
+.env.*.local
+
+# Rust stuff
+/backend/target/
+**/*.rs.bk
+
+# React stuff
+/frontend/node_modules/
+/frontend/build/
+/frontend/dist/
+/frontend/.vite/
+
+# others
+/frontend/.eslintcache
+.vscode/
+*.log
