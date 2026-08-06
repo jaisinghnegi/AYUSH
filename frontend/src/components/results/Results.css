@@ -1,0 +1,286 @@
+.outer {
+    border: 2px solid #57D24B;
+    border-radius: 12px;
+    padding: 1.25rem;
+    background: white;
+    margin: 1.25rem 0;
+    max-width: 100%;
+    box-sizing: border-box;
+  }
+  
+  .tags {
+    display: flex;
+    gap: 0.75rem;
+    margin-bottom: 1.25rem;
+    flex-wrap: wrap;
+  }
+  
+  .tags > div {
+    position: relative;
+    margin-right: 0.5rem;
+  }
+  
+  .label {
+    font-size: 0.625rem;
+    font-weight: 600;
+    color: #666;
+    background: white;
+    padding: 0 0.25rem;
+    top: -0.5rem;
+    left: 0.75rem;
+    z-index: 1;
+  }
+  
+  .tags p {
+    border: 1px solid #ddd;
+    border-radius: 1rem;
+    padding: 0.5rem 1rem;
+    margin: 0;
+    font-size: 0.875rem;
+    color: #666;
+    background: white;
+    white-space: nowrap;
+  }
+  
+  .tags > div:first-child p {
+    color: #4285f4;
+    border-color: #4285f4;
+    background: transparent;
+    box-shadow: 0 0 8px rgba(66, 133, 244, 0.3);
+    margin-top: 0.5rem;
+  }
+  
+  .tags > div:nth-child(2) p {
+    color: #34a853;
+    border-color: #57D24B;
+    background: transparent;
+    box-shadow: 0 0 8px rgba(52, 168, 83, 0.3);
+    margin-top: 0.5rem;
+  }
+  
+  .text h2 {
+    font-size: 1.125rem;
+    font-weight: 600;
+    color: #333;
+    margin: 0 0 0.75rem 0;
+    line-height: 1.3;
+  }
+  
+  .text p {
+    font-size: 0.875rem;
+    color: #666;
+    margin: 0 0 1.25rem 0;
+    line-height: 1.5;
+  }
+  
+  .buttons {
+    display: flex;
+    gap: 0.75rem;
+    justify-content: flex-end;
+    flex-wrap: wrap;
+  }
+  
+  .buttons button {
+    padding: 0.5rem 1rem;
+    border: 1px solid #ddd;
+    border-radius: 0.375rem;
+    background: white;
+    color: #666;
+    font-size: 0.8125rem;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 0.375rem;
+    white-space: nowrap;
+    min-width: fit-content;
+  }
+
+  .buttons button:disabled{
+    background: #c9c9c9;
+    color: #666;
+  }
+  
+  .buttons button:hover {
+    border-color: #57D24B;
+  }
+  
+  .buttons button#add-button {
+    background: #57D24B;
+    color: white;
+    border-color: #57D24B;
+  }
+  
+  .buttons button#add-button:hover {
+    background: #57D24B;
+  }
+  
+  /* Tablet */
+  @media (max-width: 768px) {
+    .outer {
+      margin: 1rem;
+      padding: 1rem;
+    }
+    
+    .tags {
+      gap: 0.5rem;
+    }
+    
+    .text h2 {
+      font-size: 1rem;
+    }
+    
+    .text p {
+      font-size: 0.8125rem;
+    }
+    
+    .buttons {
+      justify-content: center;
+      gap: 0.5rem;
+    }
+    
+    .buttons button {
+      flex: 1;
+      min-width: 120px;
+      justify-content: center;
+      font-size: 0.75rem;
+      padding: 0.5rem 0.75rem;
+    }
+  }
+  
+  /* Mobile */
+  @media (max-width: 480px) {
+    .outer {
+      margin: 0.75rem;
+      padding: 0.875rem;
+    }
+    
+    .tags {
+      gap: 0.5rem;
+    }
+    
+    .tags > div {
+      margin-right: 0;
+    }
+    
+    .label {
+      font-size: 0.5625rem;
+      top: -0.4rem;
+      left: 0.625rem;
+    }
+    
+    .tags p {
+      font-size: 0.75rem;
+      padding: 0.375rem 0.75rem;
+    }
+    
+    .text h2 {
+      font-size: 0.9375rem;
+      margin-bottom: 0.5rem;
+    }
+    
+    .text p {
+      font-size: 0.75rem;
+      line-height: 1.4;
+      margin-bottom: 1rem;
+    }
+    
+    .buttons {
+      flex-direction: column;
+      gap: 0.5rem;
+    }
+    
+    .buttons button {
+      width: 100%;
+      min-width: auto;
+      font-size: 0.6875rem;
+      padding: 0.625rem;
+      justify-content: center;
+    }
+  }
+
+  .outer {
+  transition: all 0.2s ease;
+  background-color: #fff; /* keep default white (or your theme color) */
+  border-radius: 10px; /* optional, makes it smooth */
+}
+
+.outer:hover {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  transform: translateY(-3px);
+  background-color: #f9f9f9; /* light gray highlight */
+  cursor: pointer;
+}
+
+.outer:active {
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+  transform: scale(0.98);
+  background-color: #f0f0f0; /* slightly darker when pressing */
+}
+
+/* --- UI Cohesive Blue Scrollbar --- */
+
+/* This targets the scrollbar in WebKit browsers (Chrome, Safari, Edge) */
+.results-container::-webkit-scrollbar {
+  width: 12px;
+}
+
+/* This targets the track (the background of the scrollbar) */
+.results-container::-webkit-scrollbar-track {
+  background: #eaf1f8; /* A very light, cool blue-grey for the track */
+  border-radius: 10px;
+}
+
+/* This targets the draggable scrolling handle (the thumb) */
+.results-container::-webkit-scrollbar-thumb {
+  background-color: #4a90e2; /* A professional blue inspired by the UI buttons */
+  border-radius: 10px;
+  border: 2px solid #eaf1f8; /* Creates a padding effect around the thumb */
+}
+
+/* Changes the thumb color when you hover over it */
+.results-container::-webkit-scrollbar-thumb:hover {
+  background-color: #357ABD; /* A slightly darker blue for the hover state */
+}
+
+/* --- For Firefox --- */
+.results-container {
+  scrollbar-width: auto;
+  scrollbar-color: #4a90e2 #eaf1f8; /* Sets thumb and track colors for Firefox */
+}
+
+/* --- Dark Theme Styles --- */
+body.dark-theme .outer {
+  background-color: #1A1A1A; /* Card Background */
+  border-color: #2F2F2F; /* Borders / Dividers */
+}
+body.dark-theme .outer:hover {
+  background-color: #2F2F2F;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
+}
+body.dark-theme .label,
+body.dark-theme .tags p {
+  background-color: #1A1A1A;
+  color: #CCCCCC; /* Normal text */
+}
+body.dark-theme .text h2 {
+  color: #FFFFFF; /* Headings / Titles */
+}
+body.dark-theme .text p {
+  color: #999999; /* Secondary text */
+}
+body.dark-theme .buttons button {
+    background-color: #2F2F2F;
+    color: #CCCCCC;
+    border-color: #999999;
+}
+body.dark-theme .buttons button:disabled {
+    background: #2F2F2F;
+    color: #666;
+    opacity: 0.5;
+}
+/* This keeps the green "Add to Composer" button, but makes the text dark for contrast */
+body.dark-theme .buttons button#add-button {
+    background: #57D24B;
+    border-color: #57D24B;
+    color: #0D0D0D; 
+}

@@ -1,0 +1,66 @@
+.loading-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  z-index: 9999;
+  display: flex;
+  background: rgba(255, 255, 255, 0); /* fixed invalid rgba syntax */
+  overflow: hidden;
+}
+
+.rectangle {
+  height: 100vh;
+  background: linear-gradient(to bottom, #D9D9D9 20%, #57D24B 100%);
+  transform: translateY(0);
+  border-left: 1px solid rgba(255, 255, 255, 0.3);
+  transition: transform 1500ms cubic-bezier(0.7, 0, 0.3, 1);
+}
+
+.side-rect {
+  flex: 0 0 8%;
+}
+
+.main-rect {
+  flex: 1;
+}
+
+.logo-space {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 10000;
+  text-align: center;
+  opacity: 1;
+  transition: opacity 1s ease-in-out;
+  filter: drop-shadow(10px 10px 15px rgba(255, 255, 255, 0.5));
+}
+
+/* Animate rectangles upwards in staggered order */
+.animate-out .rectangle:nth-child(1) { transform: translateY(-100vh); transition-delay: 1000ms; }
+.animate-out .rectangle:nth-child(2) { transform: translateY(-100vh); transition-delay: 800ms; }
+.animate-out .rectangle:nth-child(3) { transform: translateY(-100vh); transition-delay: 600ms; }
+.animate-out .rectangle:nth-child(4) { transform: translateY(-100vh); transition-delay: 400ms; }
+.animate-out .rectangle:nth-child(5) { transform: translateY(-100vh); transition-delay: 200ms; }
+.animate-out .rectangle:nth-child(6) { transform: translateY(-100vh); transition-delay: 0ms; }
+
+.animate-out .logo-space {
+  opacity: 0;
+}
+
+/* Responsive logo sizing */
+@media (max-width: 760px) {
+  .logo-space img {
+    width: 250px;
+    height: auto;
+  }
+}
+
+/* Reduce border thickness on mobile */
+@media (max-width: 600px) {
+  .rectangle {
+    border-left: 0.5px solid rgba(255, 255, 255, 0.3);
+  }
+}

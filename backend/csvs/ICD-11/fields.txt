@@ -1,0 +1,11 @@
+id
+code
+title
+definition
+parent
+browserUrl
+codingNote
+synonyms
+exclusions
+inclusions
+isLeaf

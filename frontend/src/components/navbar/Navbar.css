@@ -1,0 +1,589 @@
+/* Navbar positioning fix - Keeping original size */
+nav {
+  display: flex;
+  padding: 3px;
+  border: 2px solid #57D24B;
+  border-radius: 3em;
+  margin: 2em 0;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  position: sticky;
+  top: 1rem;
+  z-index: 1000;
+  background: var(--nav-bg, #fff);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+nav h2 {
+  color: #57D24B;
+  margin: 0;
+}
+
+nav p {
+  font-size: small;
+  margin: 0;
+}
+
+.left {
+  display: flex;
+  width: 50%;
+  flex-direction: row;
+  justify-content: flex-start;
+  align-items: center;
+  gap: 1rem;
+  min-width: 0; /* Prevents text overflow */
+}
+
+.left-text {
+  display: flex;
+  flex-direction: column;
+  align-self: center;
+  min-width: 0; /* Prevents text overflow */
+  flex: 1;
+}
+
+.right {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  width: 50%;
+  gap: 1rem;
+  position: relative;
+}
+
+/* Logo Group - Removed from main nav */
+.logo-group {
+  display: none;
+}
+
+/* Nav Links Container */
+.nav-links {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+/* Menu Logos - Only visible in hamburger menu */
+.menu-logos {
+  display: none;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+  margin-top: 2rem;
+  padding-top: 2rem;
+  border-top: 1px solid #eee;
+}
+
+/* Nav Link Styles */
+.nav-link {
+  color: #57D24B;
+  text-decoration: none;
+  font-weight: 500;
+  padding: 8px 12px;
+  border-radius: 20px;
+  transition: all 0.3s ease;
+  white-space: nowrap;
+}
+
+.nav-link:hover {
+  background-color: rgba(87, 210, 75, 0.1);
+}
+
+.nav-link.active {
+  background-color: #57D24B;
+  color: white;
+}
+
+/* Logout Button Styles */
+.logout-btn {
+  background-color: #57D24B;
+  color: white;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 20px;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 500;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  white-space: nowrap;
+}
+
+.logout-btn:hover:not(:disabled) {
+  background-color: #4BC940;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(87, 210, 75, 0.3);
+}
+
+.logout-btn:active:not(:disabled) {
+  transform: translateY(0);
+}
+
+.logout-btn.logging-out {
+  background-color: #dc3545 !important;
+  color: white !important;
+  cursor: not-allowed;
+}
+
+/* Add spinner animation */
+.logout-spinner {
+  width: 14px;
+  height: 14px;
+  border: 2px solid transparent;
+  border-top: 2px solid currentColor;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+/* Add fade out effect for the page */
+.logout-fade {
+  opacity: 0;
+  transition: opacity 0.5s ease;
+}
+
+/* Theme Switch Styles */
+.theme-switch {
+  position: relative;
+  display: inline-block;
+  width: 95px;
+  height: 30px;
+  margin-right: 1em;
+  cursor: pointer;
+}
+
+.theme-switch input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.slider {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: #e5e7eb;
+  border-radius: 30px;
+  transition: .4s;
+  display: flex;
+  align-items: center;
+}
+
+.slider:before {
+  position: absolute;
+  content: "";
+  height: 22px;
+  width: 22px;
+  left: 4px;
+  bottom: 4px;
+  background-color: #57D24B;
+  border-radius: 50%;
+  transition: .4s;
+}
+
+.switch-text {
+  width: 100%;
+  padding: 0 10px;
+  font-size: 9px;
+  font-weight: bold;
+  color: #6b7280;
+  user-select: none;
+  text-align: right;
+}
+
+/* Dark Theme Styles */
+input:checked + .slider {
+  background-color: #2F2F2F;
+}
+
+input:checked + .slider:before {
+  transform: translateX(65px);
+}
+
+input:checked + .slider .switch-text {
+  color: #FFFFFF;
+  text-align: left;
+}
+
+/* General Navbar styles in dark mode */
+body.dark-theme nav {
+  background-color: #1A1A1A;
+  border-color: #2F2F2F;
+}
+
+body.dark-theme nav h2 {
+  color: #FFFFFF;
+}
+
+body.dark-theme nav p {
+  color: #999999;
+}
+
+body.dark-theme .nav-link {
+  color: #57D24B;
+}
+
+body.dark-theme .nav-link:hover {
+  background-color: rgba(87, 210, 75, 0.15);
+}
+
+body.dark-theme .nav-link.active {
+  background-color: #57D24B;
+  color: #1A1A1A;
+}
+
+body.dark-theme .logout-btn {
+  background-color: #57D24B;
+  color: #1A1A1A;
+}
+
+body.dark-theme .logout-btn:hover:not(:disabled) {
+  background-color: #4BC940;
+  color: #1A1A1A;
+}
+
+body.dark-theme .logout-btn.logging-out {
+  background-color: #dc3545 !important;
+  color: white !important;
+}
+
+/* Hamburger Menu */
+.hamburger {
+  display: none;
+  flex-direction: column;
+  justify-content: space-around;
+  width: 30px;
+  height: 25px;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+  z-index: 101;
+}
+
+.hamburger span {
+  width: 100%;
+  height: 3px;
+  background-color: #57D24B;
+  border-radius: 5px;
+  transition: all 0.3s linear;
+  transform-origin: center;
+}
+
+.hamburger-open span:nth-child(1) {
+  transform: rotate(45deg) translate(5px, 5px);
+}
+
+.hamburger-open span:nth-child(2) {
+  opacity: 0;
+}
+
+.hamburger-open span:nth-child(3) {
+  transform: rotate(-45deg) translate(7px, -6px);
+}
+
+/* Menu Overlay */
+.menu-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  z-index: 99;
+  display: none;
+}
+
+/* Responsive Design */
+@media (max-width: 1024px) {
+  nav {
+    padding: 8px 16px;
+    margin: 1.5em 0;
+  }
+  
+  .left, .right {
+    gap: 0.8rem;
+  }
+  
+  nav h2 {
+    font-size: 1.2rem;
+  }
+  
+  nav p {
+    font-size: 0.75rem;
+  }
+  
+  .nav-link {
+    font-size: 0.9rem;
+    padding: 6px 10px;
+  }
+}
+
+@media (max-width: 768px) {
+  nav {
+    flex-wrap: wrap;
+    padding: 12px 16px;
+    border-radius: 2em;
+    margin: 1.5em 0;
+    gap: 0.5rem;
+  }
+  
+  .left {
+    width: calc(100% - 50px); /* Prevents overlap with hamburger */
+    justify-content: flex-start;
+    margin-bottom: 0;
+  }
+  
+  .right {
+    width: auto;
+    justify-content: flex-end;
+    gap: 0.8rem;
+  }
+  
+  .nav-links {
+    position: fixed;
+    top: 0;
+    right: -100%;
+    height: 100vh;
+    width: 70%;
+    max-width: 300px;
+    background: var(--nav-bg, #fff);
+    flex-direction: column;
+    align-items: flex-start;
+    justify-content: flex-start;
+    padding: 80px 2rem 2rem;
+    gap: 1.5rem;
+    transition: right 0.3s ease;
+    box-shadow: -5px 0 15px rgba(0, 0, 0, 0.1);
+    z-index: 100;
+    overflow-y: auto;
+  }
+  
+  .nav-open {
+    right: 0;
+  }
+  
+  .menu-logos {
+    display: flex;
+  }
+  
+  .hamburger {
+    display: flex;
+    position: absolute;
+    right: 1rem;
+    top: 50%;
+    transform: translateY(-50%);
+  }
+  
+  .menu-overlay {
+    display: block;
+  }
+  
+  nav h2 {
+    font-size: 1.1rem;
+  }
+  
+  nav p {
+    font-size: 0.7rem;
+    max-width: 200px;
+    text-overflow: ellipsis;
+    overflow: hidden;
+    white-space: nowrap;
+  }
+  
+  .logout-btn {
+    padding: 6px 12px;
+    font-size: 12px;
+  }
+  
+  .nav-link {
+    font-size: 0.85rem;
+    padding: 5px 8px;
+  }
+  
+  .theme-switch {
+    width: 80px;
+    height: 26px;
+    margin-right: 0;
+  }
+  
+  .slider:before {
+    height: 20px;
+    width: 20px;
+    left: 3px;
+    bottom: 3px;
+  }
+  
+  input:checked + .slider:before {
+    transform: translateX(50px);
+  }
+  
+  .switch-text {
+    font-size: 8px;
+  }
+}
+
+@media (max-width: 480px) {
+  nav {
+    margin: 1em 0;
+    padding: 10px;
+  }
+  
+  .left {
+    width: calc(100% - 40px); /* Prevents overlap with hamburger */
+  }
+  
+  .left img {
+    width: 35px;
+    height: 35px;
+  }
+  
+  .left-text {
+    max-width: 150px;
+  }
+  
+  nav h2 {
+    font-size: 1rem;
+  }
+  
+  nav p {
+    font-size: 0.65rem;
+    max-width: 150px;
+  }
+  
+  .logout-btn {
+    padding: 5px 10px;
+    font-size: 11px;
+  }
+  
+  .nav-link {
+    font-size: 0.8rem;
+    padding: 4px 6px;
+  }
+  
+  .theme-switch {
+    width: 70px;
+    height: 24px;
+  }
+  
+  .slider:before {
+    height: 18px;
+    width: 18px;
+  }
+  
+  input:checked + .slider:before {
+    transform: translateX(42px);
+  }
+  
+  .switch-text {
+    font-size: 7px;
+    padding: 0 8px;
+  }
+  
+  .hamburger {
+    right: 0.5rem;
+  }
+}
+
+/* Extra small devices */
+@media (max-width: 320px) {
+  nav {
+    padding: 8px;
+  }
+  
+  .left {
+    gap: 0.5rem;
+    width: calc(100% - 35px); /* Prevents overlap with hamburger */
+  }
+  
+  .right {
+    gap: 0.5rem;
+  }
+  
+  .left img {
+    width: 30px;
+    height: 30px;
+  }
+  
+  nav h2 {
+    font-size: 0.9rem;
+  }
+  
+  nav p {
+    font-size: 0.6rem;
+    max-width: 120px;
+  }
+  
+  .logout-btn {
+    padding: 4px 8px;
+    font-size: 10px;
+  }
+  
+  .nav-link {
+    font-size: 0.75rem;
+    padding: 3px 5px;
+  }
+  
+  .theme-switch {
+    width: 60px;
+    height: 22px;
+  }
+  
+  .slider:before {
+    height: 16px;
+    width: 16px;
+    left: 3px;
+    bottom: 3px;
+  }
+  
+  input:checked + .slider:before {
+    transform: translateX(35px);
+  }
+  
+  .switch-text {
+    font-size: 6px;
+    padding: 0 6px;
+  }
+  
+  .hamburger {
+    width: 25px;
+    height: 20px;
+right: 0.25rem;
+  }
+
+  .hamburger span {
+height: 2px;
+  }
+}
+
+/* --- MODIFICATION: Dark Theme Styles for Mobile Menu --- */
+
+/* Styles the slide-out panel's background */
+body.dark-theme .nav-links {
+  background-color: #1A1A1A; /* Card Background */
+}
+
+/* Makes the background overlay darker */
+body.dark-theme .menu-overlay {
+  background-color: rgba(0, 0, 0, 0.7);
+}
+
+/* Makes the 'X' close button white */
+body.dark-theme .hamburger-open span {
+  background-color: #FFFFFF;
+}
+
+/* Styles the divider line above the logos inside the menu */
+body.dark-theme .menu-logos {
+  border-top-color: #2F2F2F; /* Borders / Dividers */
+}

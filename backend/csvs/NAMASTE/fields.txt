@@ -1,0 +1,9 @@
+Sr_No
+NAMC_ID
+NAMC_CODE
+NAMC_term
+NAMC_term_diacritical
+NAMC_term_DEVANAGARI
+Short_definition
+Long_definition
+Ontology_branches

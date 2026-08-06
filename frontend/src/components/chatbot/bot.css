@@ -1,0 +1,223 @@
+/* bot.css */
+:root {
+  --primary-color: #57D24B;
+  --primary-dark: #3AA630;
+  --primary-light: #85E07D;
+  --text-light: #333333;
+  --text-dark: #FFFFFF;
+  --bg-light: #FFFFFF;
+  --bg-dark: #1A1A1A;
+  --msg-user-light: #E8F5E9;
+  --msg-bot-light: #F1F8E9;
+  --msg-user-dark: #2C3E29;
+  --msg-bot-dark: #37473A;
+  --shadow: 0 6px 16px rgba(0, 0, 0, 0.15);
+}
+
+.bot-container {
+  position: fixed;
+  bottom: 25px;
+  right: 25px;
+  z-index: 9999;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+/* Pop-in animation for bot icon */
+@keyframes pop-in {
+  0% {
+    transform: scale(0);
+    opacity: 0;
+  }
+  70% {
+    transform: scale(1.1);
+    opacity: 1;
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+.pop-in {
+  animation: pop-in 1s ease-out forwards;
+}
+
+.bot-icon {
+  cursor: pointer;
+  transition: all 0.3s ease;
+  margin-right: -80px;
+  margin-bottom: -50px;
+  overflow: hidden;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 200px; /* Increased size */
+  height: 200px; /* Increased size */
+  filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.2)); /* Added shadow for better visibility */
+}
+
+.bot-icon:hover {
+  transform: scale(1.1);
+}
+
+.bot-icon-img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+.bot-chat {
+  width: 380px;
+  height: 500px;
+  background: var(--bg-light);
+  border-radius: 16px;
+  box-shadow: var(--shadow);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  transition: all 0.3s ease;
+}
+
+.bot-header {
+  background: var(--primary-color);
+  color: white;
+  padding: 14px 16px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-weight: 600;
+  font-size: 16px;
+}
+
+.bot-title {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.close-btn {
+  background: transparent;
+  border: none;
+  color: white;
+  cursor: pointer;
+  font-size: 18px;
+  padding: 4px;
+  border-radius: 4px;
+  transition: background 0.2s;
+}
+
+.close-btn:hover {
+  background: rgba(255, 255, 255, 0.2);
+}
+
+.bot-messages {
+  flex: 1;
+  padding: 16px;
+  overflow-y: auto;
+  background: var(--bg-light);
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.bot-msg {
+  padding: 12px 16px;
+  border-radius: 18px;
+  max-width: 80%;
+  word-wrap: break-word;
+  line-height: 1.4;
+  animation: fadeIn 0.3s ease;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.bot-msg.user {
+  background: var(--msg-user-light);
+  align-self: flex-end;
+  border-bottom-right-radius: 6px;
+}
+
+.bot-msg.bot {
+  background: var(--msg-bot-light);
+  align-self: flex-start;
+  border-bottom-left-radius: 6px;
+}
+
+.bot-input {
+  display: flex;
+  border-top: 1px solid #ddd;
+  background: var(--bg-light);
+  padding: 12px;
+}
+
+.bot-input input {
+  flex: 1;
+  border: 1px solid #ddd;
+  border-radius: 20px;
+  padding: 12px 16px;
+  outline: none;
+  font-size: 14px;
+  background: var(--bg-light);
+  color: var(--text-light);
+}
+
+.bot-input input:focus {
+  border-color: var(--primary-color);
+}
+
+.bot-input button {
+  background: var(--primary-color);
+  color: white;
+  border: none;
+  border-radius: 50%;
+  width: 44px;
+  height: 44px;
+  margin-left: 8px;
+  cursor: pointer;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  transition: background 0.2s;
+}
+
+.bot-input button:hover {
+  background: var(--primary-dark);
+}
+
+/* Responsive Design */
+@media (max-width: 480px) {
+  .bot-container {
+    bottom: 15px;
+    right: 15px;
+    left: 15px;
+    display: flex;
+    justify-content: flex-end;
+  }
+  
+  .bot-chat {
+    width: 100%;
+    height: 70vh;
+    border-radius: 16px 16px 0 0;
+  }
+  
+  .bot-icon {
+    width: 70px;
+    height: 70px;
+  }
+}
+
+/* Scrollbar styling */
+.bot-messages::-webkit-scrollbar {
+  width: 6px;
+}
+
+.bot-messages::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.bot-messages::-webkit-scrollbar-thumb {
+  background: #ccc;
+  border-radius: 3px;
+}
