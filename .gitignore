@@ -12,9 +12,10 @@ pnpm-debug.log*
 .env
 .env.*.local
 
-# Rust stuff
-/backend/target/
-**/*.rs.bk
+# Python stuff
+/backend/venv/
+**/__pycache__/
+*.pyc
 
 # React stuff
 /frontend/node_modules/

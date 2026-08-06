@@ -38,42 +38,82 @@ const Composer = ({ items, onRemove }) => {
     setHasPatientInfo(false);
   };
 
-  // Helper function to generate FHIR Bundle
+  // Generates a FHIR Bundle representing a problem list: a Patient resource
+  // (if we have patient info) plus one Condition per selected code, each
+  // dual-coded across NAMASTE and ICD-11 TM2 -- category "problem-list-item"
+  // is the standard FHIR pattern for this, not a bare CodeableConcept (which
+  // is a data type, not a resource, and can't stand alone in a Bundle entry).
+  const NAMASTE_SYSTEM = "http://namaste-codes.org";
+  const ICD11_SYSTEM = "http://id.who.int/icd/release/11/mms";
+
   const generateFHIRBundle = () => {
+    const hasPatientInfo = patientInfo.name || patientInfo.email || patientInfo.phone;
+    const patientId = `patient-${Date.now()}`;
+
+    const patientEntry = hasPatientInfo ? [{
+      fullUrl: `urn:uuid:${patientId}`,
+      resource: {
+        resourceType: "Patient",
+        id: patientId,
+        name: patientInfo.name ? [{ text: patientInfo.name }] : undefined,
+        telecom: [
+          ...(patientInfo.email ? [{ system: "email", value: patientInfo.email }] : []),
+          ...(patientInfo.phone ? [{ system: "phone", value: patientInfo.phone }] : []),
+        ],
+      },
+    }] : [];
+
+    const conditionEntries = items.map((item, index) => ({
+      fullUrl: `urn:uuid:${item.id || `condition-${index}`}`,
+      resource: {
+        resourceType: "Condition",
+        id: item.id || `condition-${index}`,
+        clinicalStatus: {
+          coding: [{
+            system: "http://terminology.hl7.org/CodeSystem/condition-clinical",
+            code: "active",
+          }],
+        },
+        verificationStatus: {
+          coding: [{
+            system: "http://terminology.hl7.org/CodeSystem/condition-ver-status",
+            code: "confirmed",
+          }],
+        },
+        category: [{
+          coding: [{
+            system: "http://terminology.hl7.org/CodeSystem/condition-category",
+            code: "problem-list-item",
+            display: "Problem List Item",
+          }],
+        }],
+        code: {
+          coding: [
+            ...(item.icd_code ? [{
+              system: ICD11_SYSTEM,
+              code: item.icd_code,
+              display: item.display || item.title,
+            }] : []),
+            ...(item.nam_code ? [{
+              system: NAMASTE_SYSTEM,
+              code: item.nam_code,
+              display: item.display || item.title,
+            }] : []),
+          ],
+          text: item.display || item.title,
+        },
+        ...(hasPatientInfo ? { subject: { reference: `urn:uuid:${patientId}` } } : {}),
+        recordedDate: new Date().toISOString(),
+      },
+    }));
+
     return {
       resourceType: "Bundle",
       id: `bundle-${Date.now()}`,
       type: "collection",
       timestamp: new Date().toISOString(),
-      total: items.length,
-      patient: patientInfo.name || patientInfo.email || patientInfo.phone ? {
-        name: patientInfo.name,
-        email: patientInfo.email,
-        phone: patientInfo.phone
-      } : null,
-      entry: items.map((item, index) => ({
-        fullUrl: `urn:uuid:${item.id || index}`,
-        resource: {
-          resourceType: "CodeableConcept",
-          id: item.id || `code-${index}`,
-          coding: [
-            ...(item.icd_code ? [{
-              system: "http://hl7.org/fhir/sid/icd-10",
-              code: item.icd_code,
-              display: item.display || item.title
-            }] : []),
-            ...(item.nam_code ? [{
-              system: "http://terminology.hl7.org/CodeSystem/v2-0203",
-              code: item.nam_code,
-              display: item.display || item.title
-            }] : [])
-          ],
-          text: {
-            status: "generated",
-            div: `<div>${item.display || item.title}</div>`
-          }
-        }
-      }))
+      total: patientEntry.length + conditionEntries.length,
+      entry: [...patientEntry, ...conditionEntries],
     };
   };
 

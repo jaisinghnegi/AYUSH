@@ -73,7 +73,7 @@ const HomePage = () => {
       params.append('threshold', '0.6');  
     }
 
-    const apiUrl = `http://127.0.0.1:8080/terminology/search?${params.toString()}`;
+    const apiUrl = `http://127.0.0.1:8090/terminology/search?${params.toString()}`;
     
     console.log('Constructed API URL:', apiUrl); 
     
