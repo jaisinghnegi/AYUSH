@@ -4,8 +4,9 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from app import config
-from app.api import fhir, icd_search, namaste_search, routes, terminology_search
-from app.db import mongo, redis_client
+from app.api import assistant, auth, encounters, fhir, icd_search, namaste_search, routes, terminology_search
+from app.db import encounters as encounters_db
+from app.db import mongo, otp, redis_client, users
 from app.gemini.embedding import generate_embeddings_handler
 
 
@@ -80,6 +81,11 @@ async def lifespan(app: FastAPI):
     try:
         await mongo.init_mongodb()
         print("✅ MongoDB connection initialized")
+
+        await users.ensure_indexes()
+        await otp.ensure_indexes()
+        await encounters_db.ensure_indexes()
+        print("✅ Users/OTP/Encounters collections indexed")
     except Exception as e:
         print(f"⚠️  MongoDB connection failed: {e} (server will still start)")
 
@@ -114,6 +120,9 @@ def create_app() -> FastAPI:
     app.include_router(icd_search.router, prefix="/icd")
     app.include_router(namaste_search.router, prefix="/namaste")
     app.include_router(fhir.router)
+    app.include_router(auth.router)
+    app.include_router(encounters.router)
+    app.include_router(assistant.router)
 
     return app
 

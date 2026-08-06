@@ -19,6 +19,7 @@ Writes: app/data/namaste_icd11_mapping.json
 
 import json
 import re
+import sys
 from datetime import datetime, timezone
 from pathlib import Path
 
@@ -27,6 +28,9 @@ from pymongo import MongoClient
 MAPPING_VERSION = "1.0.0"
 
 BACKEND_DIR = Path(__file__).resolve().parent.parent
+sys.path.insert(0, str(BACKEND_DIR))
+from app import config  # noqa: E402
+
 OUTPUT_PATH = BACKEND_DIR / "app" / "data" / "namaste_icd11_mapping.json"
 
 # WHO's TM2 chapter uses code prefixes SK through ST (SA-SJ is the separate
@@ -36,7 +40,7 @@ TM2_CODE_RE = re.compile(r"\bS[K-T][0-9A-Z]{1,3}\b")
 
 def main() -> None:
     verified_at = datetime.now(timezone.utc).isoformat()
-    client = MongoClient("mongodb://localhost:27017")
+    client = MongoClient(config.MONGODB_URI)
     namaste = client["ayurveda_db"]["namc_codes"]
     icd = client["icd11_database"]["icd11_entities"]
 

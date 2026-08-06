@@ -13,6 +13,9 @@ from pathlib import Path
 from pymongo import MongoClient, UpdateOne
 
 BACKEND_DIR = Path(__file__).resolve().parent.parent
+sys.path.insert(0, str(BACKEND_DIR))
+from app import config  # noqa: E402
+
 DEFAULT_CSV = BACKEND_DIR / "csvs" / "NAMASTE" / "NAMC_FINAL.csv"
 
 INT_FIELDS = {"field_1", "field_1_1"}
@@ -49,7 +52,7 @@ def main() -> None:
     rows = load_rows(csv_path)
     print(f"✅ Parsed {len(rows)} rows")
 
-    client = MongoClient("mongodb://localhost:27017")
+    client = MongoClient(config.MONGODB_URI)
     collection = client["ayurveda_db"]["namc_codes"]
 
     operations = [

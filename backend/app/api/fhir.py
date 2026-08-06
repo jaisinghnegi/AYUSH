@@ -12,13 +12,14 @@ actually look for.
 from datetime import datetime, timezone
 from typing import Optional
 
-from fastapi import APIRouter, Body
+from fastapi import APIRouter, Body, Depends
 from fastapi.responses import JSONResponse
 
+from app.auth.dependencies import get_optional_user_email
 from app.codecs.icd import IcdCodec, IcdFilter
 from app.codecs.mapping import ICD11_TM2_SYSTEM, NAMASTE_SYSTEM, mapping_table
 from app.codecs.namaste import Language, NamasteCodec, NamasteFilter
-from app.db import audit, mongo
+from app.db import audit, mongo, users
 
 router = APIRouter()
 
@@ -68,7 +69,21 @@ def _translate_result(result: bool, message: str, matches: list[dict]) -> dict:
     return {"resourceType": "Parameters", "parameter": parameters}
 
 
-async def _do_translate(code: Optional[str], system: Optional[str]) -> JSONResponse:
+async def _resolve_user_id(email: Optional[str]) -> Optional[str]:
+    """Best-effort: turn a JWT's email subject into the user's Mongo _id for
+    audit attribution. Returns None if there's no token, or it doesn't match
+    a real user -- callers must treat that as "unauthenticated", not error."""
+    if not email:
+        return None
+    user = await users.get_user_by_email(email)
+    return user.id if user else None
+
+
+async def _do_translate(
+    code: Optional[str], system: Optional[str], requester_email: Optional[str] = None
+) -> JSONResponse:
+    user_id = await _resolve_user_id(requester_email)
+
     if not code or not system:
         return JSONResponse(
             status_code=400,
@@ -88,7 +103,7 @@ async def _do_translate(code: Optional[str], system: Optional[str]) -> JSONRespo
         )
 
     if not entries:
-        await audit.log_lookup("ConceptMap/$translate", system, code, found=False)
+        await audit.log_lookup("ConceptMap/$translate", system, code, found=False, user_id=user_id)
         return JSONResponse(
             _translate_result(
                 False, f"No mapping found for code '{code}' in {target_system_label}", []
@@ -131,20 +146,27 @@ async def _do_translate(code: Optional[str], system: Optional[str]) -> JSONRespo
         found=True,
         result_code=first.icd11_tm2_code if _is_namaste_system(system) else first.namaste_code,
         result_display=first.icd11_tm2_title if _is_namaste_system(system) else first.namaste_display,
+        user_id=user_id,
     )
 
     return JSONResponse(_translate_result(True, "Concept translated", matches))
 
 
 @router.post("/ConceptMap/$translate")
-async def concept_map_translate(body: dict = Body(default={})) -> JSONResponse:
+async def concept_map_translate(
+    body: dict = Body(default={}), requester_email: Optional[str] = Depends(get_optional_user_email)
+) -> JSONResponse:
     code, system = _extract_translate_params(body)
-    return await _do_translate(code, system)
+    return await _do_translate(code, system, requester_email)
 
 
 @router.get("/ConceptMap/$translate")
-async def concept_map_translate_get(code: Optional[str] = None, system: Optional[str] = None) -> JSONResponse:
-    return await _do_translate(code, system)
+async def concept_map_translate_get(
+    code: Optional[str] = None,
+    system: Optional[str] = None,
+    requester_email: Optional[str] = Depends(get_optional_user_email),
+) -> JSONResponse:
+    return await _do_translate(code, system, requester_email)
 
 
 # ---------------------------------------------------------------------------
@@ -219,7 +241,13 @@ async def valueset_expand(url: str = "", filter: str = "", count: int = 20) -> J
 # ---------------------------------------------------------------------------
 
 @router.get("/CodeSystem/$lookup")
-async def codesystem_lookup(system: str = "", code: str = "") -> JSONResponse:
+async def codesystem_lookup(
+    system: str = "",
+    code: str = "",
+    requester_email: Optional[str] = Depends(get_optional_user_email),
+) -> JSONResponse:
+    user_id = await _resolve_user_id(requester_email)
+
     if not system or not code:
         return JSONResponse(
             status_code=400,
@@ -242,7 +270,7 @@ async def codesystem_lookup(system: str = "", code: str = "") -> JSONResponse:
             doc = await collection.find_one({"field_1": int(code)})
 
         if doc is None:
-            await audit.log_lookup("CodeSystem/$lookup", system, code, found=False)
+            await audit.log_lookup("CodeSystem/$lookup", system, code, found=False, user_id=user_id)
             return JSONResponse(
                 status_code=404,
                 content={
@@ -253,7 +281,9 @@ async def codesystem_lookup(system: str = "", code: str = "") -> JSONResponse:
 
         display = doc.get("vyādhi-viniścayaḥ") or doc.get("vyAdhi-viniScayaH") or ""
         definition = doc.get("Unnamed: 6") or doc.get("Unnamed: 7") or ""
-        await audit.log_lookup("CodeSystem/$lookup", system, code, found=True, result_display=display)
+        await audit.log_lookup(
+            "CodeSystem/$lookup", system, code, found=True, result_display=display, user_id=user_id
+        )
         return JSONResponse(
             {
                 "resourceType": "Parameters",
@@ -272,7 +302,7 @@ async def codesystem_lookup(system: str = "", code: str = "") -> JSONResponse:
         collection = db["icd11_entities"]
         doc = await collection.find_one({"code": code})
         if not doc:
-            await audit.log_lookup("CodeSystem/$lookup", system, code, found=False)
+            await audit.log_lookup("CodeSystem/$lookup", system, code, found=False, user_id=user_id)
             return JSONResponse(
                 status_code=404,
                 content={
@@ -281,7 +311,12 @@ async def codesystem_lookup(system: str = "", code: str = "") -> JSONResponse:
                 },
             )
         await audit.log_lookup(
-            "CodeSystem/$lookup", system, code, found=True, result_display=doc.get("title", "")
+            "CodeSystem/$lookup",
+            system,
+            code,
+            found=True,
+            result_display=doc.get("title", ""),
+            user_id=user_id,
         )
         return JSONResponse(
             {

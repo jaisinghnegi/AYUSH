@@ -1,5 +1,8 @@
 import React, { useState, useEffect, useRef } from "react";
 import "./bot.css";
+import { API_BASE } from "../../lib/authApi";
+
+const MAX_HISTORY_TURNS = 10;
 
 const Bot = () => {
   const [visible, setVisible] = useState(false);
@@ -11,6 +14,7 @@ const Bot = () => {
     },
   ]);
   const [input, setInput] = useState("");
+  const [sending, setSending] = useState(false);
   const messagesEndRef = useRef(null);
 
   // Show bot icon after 5 seconds with pop animation
@@ -31,39 +35,44 @@ const Bot = () => {
   };
 
   const handleSend = async () => {
-    if (!input.trim()) return;
+    if (!input.trim() || sending) return;
 
     const userMessage = { sender: "user", text: input };
+    const history = messages
+      .slice(-MAX_HISTORY_TURNS)
+      .map((m) => ({ role: m.sender === "user" ? "user" : "assistant", content: m.text }));
+
     setMessages((prev) => [...prev, userMessage]);
+    setInput("");
+    setSending(true);
 
     try {
-      // Call Gemini API
-      const res = await fetch(
-        `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${
-          import.meta.env.VITE_GEMINI_API_KEY
-        }`,
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            contents: [{ role: "user", parts: [{ text: input }] }],
-          }),
-        }
-      );
+      const res = await fetch(`${API_BASE}/assistant/chat`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ message: userMessage.text, history }),
+      });
 
       const data = await res.json();
-      const botReply =
-        data?.candidates?.[0]?.content?.parts?.[0]?.text ||
-        "Sorry, I couldn't find information on that.";
 
-      setMessages((prev) => [...prev, { sender: "bot", text: botReply }]);
+      if (!res.ok) {
+        setMessages((prev) => [
+          ...prev,
+          { sender: "bot", text: data?.error || "Sorry, something went wrong." },
+        ]);
+        return;
+      }
+
+      setMessages((prev) => [...prev, { sender: "bot", text: data.reply }]);
     } catch (err) {
+      console.error("Assistant chat failed:", err);
       setMessages((prev) => [
         ...prev,
         { sender: "bot", text: "⚠️ Error fetching response. Try again." },
       ]);
+    } finally {
+      setSending(false);
     }
-    setInput("");
   };
 
   return (
@@ -73,9 +82,9 @@ const Bot = () => {
           {/** Floating Icon **/}
           {!open && (
             <div className="bot-icon pop-in" onClick={() => setOpen(true)}>
-              <img 
-                src="/assets/boticon.png" 
-                alt="Ayurveda Assistant" 
+              <img
+                src="/assets/boticon.png"
+                alt="Ayurveda Assistant"
                 className="bot-icon-img"
               />
             </div>
@@ -98,6 +107,7 @@ const Bot = () => {
                     {msg.text}
                   </div>
                 ))}
+                {sending && <div className="bot-msg bot">Thinking...</div>}
                 <div ref={messagesEndRef} />
               </div>
               <div className="bot-input">
@@ -107,8 +117,9 @@ const Bot = () => {
                   onChange={(e) => setInput(e.target.value)}
                   placeholder="Ask about symptoms, codes, diseases..."
                   onKeyDown={(e) => e.key === "Enter" && handleSend()}
+                  disabled={sending}
                 />
-                <button onClick={handleSend}>
+                <button onClick={handleSend} disabled={sending}>
                   <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
                     <path d="M2 21L23 12L2 3V10L17 12L2 14V21Z" fill="currentColor"/>
                   </svg>

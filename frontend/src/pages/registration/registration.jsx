@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Phone, User, Mail, MessageSquare, CheckCircle, Loader } from 'lucide-react';
+import { registerUser, saveSession } from '../../lib/authApi';
 
 
 const RegistrationPage = () => {
@@ -9,7 +10,8 @@ const RegistrationPage = () => {
     lastName: '',
     email: '',
     phone: '',
-    nickname: ''
+    nickname: '',
+    password: ''
   });
   const [errors, setErrors] = useState({});
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -77,47 +79,26 @@ const RegistrationPage = () => {
     setIsSubmitting(true);
 
     try {
-      // Simulate waiting for submission, e.g., API call
-      await new Promise(resolve => setTimeout(resolve, 1000));
-
-      // Retrieve existing users from localStorage
-      const existingUsers = JSON.parse(localStorage.getItem('users')) || [];
-
-      // Check if email already registered
-      const emailExists = existingUsers.some(user => user.email === formData.email);
-      if (emailExists) {
-        alert('Email already registered!');
-        setIsSubmitting(false);
-        return;
-      }
-
-
-      // Create new user object
-      const newUser = {
-        firstName: formData.firstName,
-        lastName: formData.lastName,
+      const { token, user } = await registerUser({
         email: formData.email,
+        name: `${formData.firstName} ${formData.lastName}`.trim(),
+        password: formData.password,
         phone: formData.phone,
-        nickname: formData.nickname,
-        password: formData.password // For simplicity, set OTP as password
-      };
+      });
 
-      // Save new user to localStorage
-      existingUsers.push(newUser);
-      localStorage.setItem('users', JSON.stringify(existingUsers));
-
-      console.log('Registration completed:', newUser);
+      saveSession({ token, user });
 
       setIsSubmitting(false);
       setShowSuccess(true);
 
       // Redirect after 3 seconds
       setTimeout(() => {
-        navigate('/');
+        navigate('/home');
       }, 3000);
 
     } catch (error) {
       setIsSubmitting(false);
+      alert(error.message);
       console.error('Registration failed:', error);
     }
   }
@@ -281,7 +262,7 @@ const RegistrationPage = () => {
               <div style={styles.inputWrapper}>
                 <MessageSquare size={20} style={styles.inputIcon} />
                 <input
-                  type="text"
+                  type="password"
                   name="password"
                   value={formData.password}
                   onChange={handleInputChange}

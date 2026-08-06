@@ -15,6 +15,9 @@ from pathlib import Path
 from pymongo import MongoClient, UpdateOne
 
 BACKEND_DIR = Path(__file__).resolve().parent.parent
+sys.path.insert(0, str(BACKEND_DIR))
+from app import config  # noqa: E402
+
 DEFAULT_CSV = BACKEND_DIR / "csvs" / "ICD-11" / "icd11_mms.csv"
 
 FIELDS = [
@@ -48,7 +51,7 @@ def main(csv_path: Path | None = None) -> None:
     rows = load_rows(csv_path)
     print(f"Parsed {len(rows)} rows")
 
-    client = MongoClient("mongodb://localhost:27017")
+    client = MongoClient(config.MONGODB_URI)
     collection = client["icd11_database"]["icd11_entities"]
     collection.create_index("id", unique=True)
 
