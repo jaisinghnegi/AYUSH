@@ -1,5 +1,3 @@
-import math
-from dataclasses import dataclass
 from datetime import datetime, timezone
 from enum import Enum
 from typing import Any, Optional
@@ -10,7 +8,8 @@ from fastapi.responses import JSONResponse
 from app import config
 from app.codecs.icd import IcdCodec, IcdFilter
 from app.codecs.namaste import Language, NamasteCodec, NamasteFilter
-from app.db import mongo
+from app.codecs.semantic import SimilarityResult
+from app.codecs.semantic import semantic_search_local as _semantic_search_local
 from app.gemini.embedding import call_gemini_embedding_api
 
 router = APIRouter()
@@ -18,12 +17,6 @@ router = APIRouter()
 
 def _now() -> str:
     return datetime.now(timezone.utc).isoformat()
-
-
-@dataclass
-class SimilarityResult:
-    document: dict
-    similarity: float
 
 
 class SearchMethod(str, Enum):
@@ -39,54 +32,6 @@ class SearchMethod(str, Enum):
         if lowered in ("regex", "text", "keyword"):
             return SearchMethod.REGEX
         return SearchMethod.AUTO
-
-
-def _cosine_similarity(a: list[float], b: list[float]) -> float:
-    if len(a) != len(b):
-        return 0.0
-
-    dot_product = sum(x * y for x, y in zip(a, b))
-    norm_a = math.sqrt(sum(x * x for x in a))
-    norm_b = math.sqrt(sum(x * x for x in b))
-
-    if norm_a == 0.0 or norm_b == 0.0:
-        return 0.0
-    return dot_product / (norm_a * norm_b)
-
-
-async def _semantic_search_local(
-    query_embedding: list[float],
-    limit: int,
-    threshold: float,
-    collection_name: str,
-    database_name: str,
-) -> list[SimilarityResult]:
-    client = await mongo.get_instance()
-    db = client.get_database_by_name(database_name)
-    collection = db[collection_name]
-
-    print(f"🔍 Searching in collection: {database_name}.{collection_name}")
-
-    cursor = collection.find({"embedding": {"$exists": True, "$ne": []}})
-    candidates: list[SimilarityResult] = []
-
-    async for doc in cursor:
-        embedding_array = doc.get("embedding")
-        if not embedding_array:
-            continue
-
-        embedding_vec = [float(v) for v in embedding_array]
-        if len(embedding_vec) != len(query_embedding):
-            continue
-
-        similarity = _cosine_similarity(query_embedding, embedding_vec)
-        if similarity >= threshold:
-            candidates.append(SimilarityResult(document=doc, similarity=similarity))
-
-    print(f"🎯 Found {len(candidates)} candidates above threshold {threshold}")
-
-    candidates.sort(key=lambda r: r.similarity, reverse=True)
-    return candidates[:limit]
 
 
 def _format_namaste_results(results: list[SimilarityResult], include_similarity: bool) -> list[dict]:

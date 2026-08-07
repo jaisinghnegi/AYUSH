@@ -60,7 +60,7 @@ const Navbar = ({ isDarkMode, onToggleTheme }) => {
                 
                 <div className="right">
                     <div className={`nav-links ${isMenuOpen ? 'nav-open' : ''}`}>
-                        <a 
+                        <a
                             className={`nav-link ${isActive('/docs')}`}
                             href="/docs"
                             onClick={(e) => {
@@ -71,7 +71,31 @@ const Navbar = ({ isDarkMode, onToggleTheme }) => {
                         >
                             API Documentation
                         </a>
-                        
+
+                        <a
+                            className={`nav-link ${isActive('/coverage')}`}
+                            href="/coverage"
+                            onClick={(e) => {
+                                e.preventDefault();
+                                navigate('/coverage');
+                                setIsMenuOpen(false);
+                            }}
+                        >
+                            Coverage
+                        </a>
+
+                        <a
+                            className={`nav-link ${isActive('/analytics')}`}
+                            href="/analytics"
+                            onClick={(e) => {
+                                e.preventDefault();
+                                navigate('/analytics');
+                                setIsMenuOpen(false);
+                            }}
+                        >
+                            Analytics
+                        </a>
+
                         <button 
                             className={`logout-btn ${isLoggingOut ? 'logging-out' : ''}`} 
                             onClick={handleLogout}

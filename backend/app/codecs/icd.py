@@ -7,6 +7,7 @@ from app.db import mongo
 
 class IcdDiscipline(str, Enum):
     BIOMEDICINE = "BIOMEDICINE"
+    TM1 = "TM1"
     TM2 = "TM2"
 
 
@@ -67,10 +68,15 @@ class IcdCodec:
 
         query: dict = {}
 
+        # TM1 and TM2 entities live at the same /mms/ URL path as everything
+        # else in this dataset -- WHO only distinguishes them by a "(TM1)" /
+        # "(TM2)" suffix in the title, so that's what we have to filter on.
         if filter.discipline == IcdDiscipline.BIOMEDICINE:
-            query["id"] = {"$regex": "/mms/", "$options": "i"}
+            query["title"] = {"$not": {"$regex": r"\((TM1|TM2)\)"}}
+        elif filter.discipline == IcdDiscipline.TM1:
+            query["title"] = {"$regex": r"\(TM1\)"}
         elif filter.discipline == IcdDiscipline.TM2:
-            query["id"] = {"$regex": "/tm/", "$options": "i"}
+            query["title"] = {"$regex": r"\(TM2\)"}
 
         if filter.search_term:
             query["$or"] = [

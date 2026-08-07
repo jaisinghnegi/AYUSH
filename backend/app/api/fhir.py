@@ -15,10 +15,12 @@ from typing import Optional
 from fastapi import APIRouter, Body, Depends
 from fastapi.responses import JSONResponse
 
+from app import config
 from app.auth.dependencies import get_optional_user_email
 from app.codecs.icd import IcdCodec, IcdFilter
 from app.codecs.mapping import ICD11_TM2_SYSTEM, NAMASTE_SYSTEM, mapping_table
 from app.codecs.namaste import Language, NamasteCodec, NamasteFilter
+from app.codecs.semantic import semantic_search_by_text
 from app.db import audit, mongo, users
 
 router = APIRouter()
@@ -59,14 +61,86 @@ def _extract_translate_params(body: dict) -> tuple[Optional[str], Optional[str]]
     return code, system
 
 
-def _translate_result(result: bool, message: str, matches: list[dict]) -> dict:
+def _translate_result(
+    result: bool, message: str, matches: list[dict], candidates: Optional[list[dict]] = None
+) -> dict:
     parameters: list[dict] = [
         {"name": "result", "valueBoolean": result},
         {"name": "message", "valueString": message},
     ]
     for match in matches:
         parameters.append({"name": "match", "part": match})
+    # "candidate" is not a FHIR-defined part of $translate -- it's our own
+    # addition for the case where there's no verified crosswalk entry, but
+    # semantic search over real TM2 embeddings still found plausible
+    # matches. Kept clearly distinct from "match" (verified) so a client
+    # can never confuse an AI-ranked guess for a confirmed mapping.
+    for candidate in candidates or []:
+        parameters.append({"name": "candidate", "part": candidate})
     return {"resourceType": "Parameters", "parameter": parameters}
+
+
+async def _get_namaste_query_text(code: str) -> Optional[str]:
+    """Fetch a NAMASTE entry's own text (for embedding), by numeric id or
+    raw AYU code -- same lookup semantics as mapping_table.lookup_by_namaste."""
+    client = await mongo.get_instance()
+    db = client.get_database_by_name("ayurveda_db")
+    collection = db["namc_codes"]
+
+    doc = None
+    if code.isdigit():
+        doc = await collection.find_one({"field_1": int(code)})
+    if doc is None:
+        doc = await collection.find_one({"AYU": code})
+    if doc is None:
+        return None
+
+    parts = [
+        doc.get("vyAdhi-viniScayaH"),
+        doc.get("vyādhi-viniścayaḥ"),
+        doc.get("व्याधि-विनिश्चयः"),
+        doc.get("Unnamed: 7"),  # long_definition
+    ]
+    text = " ".join(p for p in parts if p)
+    return text or None
+
+
+async def _find_semantic_candidates(code: str, limit: int = 3, threshold: float = 0.55) -> list[dict]:
+    """When there's no verified NAMASTE<->TM2 mapping, fall back to real
+    embedding similarity over the (separately generated) TM2 embeddings --
+    ranked, honestly labeled as unverified, never presented as a match."""
+    if not config.GEMINI_KEY:
+        return []
+
+    query_text = await _get_namaste_query_text(code)
+    if not query_text:
+        return []
+
+    try:
+        results = await semantic_search_by_text(
+            config.GEMINI_KEY, query_text, limit, threshold, "icd11_entities", "icd11_database"
+        )
+    except Exception as e:
+        print(f"Semantic candidate search failed (non-fatal): {e}")
+        return []
+
+    candidates = []
+    for r in results:
+        doc = r.document
+        candidates.append(
+            [
+                {
+                    "name": "concept",
+                    "valueCoding": {
+                        "system": ICD11_TM2_SYSTEM,
+                        "code": doc.get("code", ""),
+                        "display": doc.get("title", ""),
+                    },
+                },
+                {"name": "similarity", "valueDecimal": round(r.similarity, 3)},
+            ]
+        )
+    return candidates
 
 
 async def _resolve_user_id(email: Optional[str]) -> Optional[str]:
@@ -103,12 +177,18 @@ async def _do_translate(
         )
 
     if not entries:
-        await audit.log_lookup("ConceptMap/$translate", system, code, found=False, user_id=user_id)
-        return JSONResponse(
-            _translate_result(
-                False, f"No mapping found for code '{code}' in {target_system_label}", []
+        candidates = await _find_semantic_candidates(code) if _is_namaste_system(system) else []
+        message = f"No verified mapping found for code '{code}' in {target_system_label}"
+        if candidates:
+            message += (
+                f" -- showing {len(candidates)} semantically similar candidate(s) instead, "
+                "ranked by real embedding similarity. These are unverified suggestions, not "
+                "confirmed mappings."
             )
+        await audit.log_lookup(
+            "ConceptMap/$translate", system, code, found=False, user_id=user_id
         )
+        return JSONResponse(_translate_result(False, message, [], candidates))
 
     matches = []
     for entry in entries:

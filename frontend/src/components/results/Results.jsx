@@ -1,7 +1,16 @@
 import "./Results.css"
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
+import TranslatePanel from "./TranslatePanel.jsx";
+import { API_BASE } from "../../lib/authApi";
+
+const LANGUAGES = { hi: "हिन्दी", bn: "বাংলা", ta: "தமிழ்", gu: "ગુજરાતી", te: "తెలుగు" };
 
 const Results = ({item, handleAddToComposer}) => {
+    const [expanded, setExpanded] = useState(false);
+    const [language, setLanguage] = useState("en");
+    const [translated, setTranslated] = useState(null); // {title, description}
+    const [translating, setTranslating] = useState(false);
+
     //api should probably do this one
     let title, description, nam_code, icd_code;
 
@@ -33,6 +42,52 @@ const Results = ({item, handleAddToComposer}) => {
         nam_code = "N/A";
         icd_code = "N/A";
     }
+
+    const isNamasteSourced = item.code_system === "NAMASTE";
+    const recordId = String(isNamasteSourced ? (item.sr_no ?? nam_code) : (item.id ?? icd_code));
+    const translateSource = isNamasteSourced ? "namaste" : "icd";
+
+    useEffect(() => {
+        if (language === "en") {
+            setTranslated(null);
+            return;
+        }
+
+        let cancelled = false;
+
+        const translateField = async (text, field) => {
+            const res = await fetch(`${API_BASE}/translate`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ text, language, source: translateSource, record_id: recordId, field }),
+            });
+            const data = await res.json();
+            if (!res.ok) throw new Error(data?.error || "Translation failed");
+            return data.translated_text;
+        };
+
+        const run = async () => {
+            setTranslating(true);
+            try {
+                const [translatedTitle, translatedDescription] = await Promise.all([
+                    translateField(title, "title"),
+                    translateField(description, "description"),
+                ]);
+                if (!cancelled) {
+                    setTranslated({ title: translatedTitle, description: translatedDescription });
+                }
+            } catch (err) {
+                console.error("Translation failed:", err);
+                if (!cancelled) setTranslated(null);
+            } finally {
+                if (!cancelled) setTranslating(false);
+            }
+        };
+
+        run();
+        return () => { cancelled = true; };
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [language, recordId]);
 
     // add to clipboard thing
     const [copiedButton, setCopiedButton] = useState(null);
@@ -69,10 +124,38 @@ const Results = ({item, handleAddToComposer}) => {
                 </div>
             </div>
 
-            <div className="text">
-                <h2>{title}</h2>
-                <p>{description}</p>
+            <div style={{ display: "flex", justifyContent: "flex-end", marginBottom: "4px" }}>
+                <select
+                    value={language}
+                    onChange={(e) => setLanguage(e.target.value)}
+                    onClick={(e) => e.stopPropagation()}
+                    style={{ fontSize: "0.8rem", padding: "2px 6px", borderRadius: "6px", border: "1px solid #d1d5db" }}
+                >
+                    <option value="en">English</option>
+                    {Object.entries(LANGUAGES).map(([code, label]) => (
+                        <option key={code} value={code}>{label}</option>
+                    ))}
+                </select>
             </div>
+
+            <div
+                className="text"
+                onClick={() => setExpanded((prev) => !prev)}
+                style={{ cursor: "pointer" }}
+                role="button"
+                tabIndex={0}
+                onKeyDown={(e) => e.key === "Enter" && setExpanded((prev) => !prev)}
+            >
+                <h2>
+                    {translating ? title : (translated?.title || title)}
+                    <span style={{ marginLeft: "8px", fontSize: "0.8em", color: "#9ca3af" }}>
+                        {expanded ? "▲" : "▼"}
+                    </span>
+                </h2>
+                <p>{translating ? "Translating..." : (translated?.description || description)}</p>
+            </div>
+
+            {expanded && <TranslatePanel item={item} />}
 
             <div className="buttons">
                 <button

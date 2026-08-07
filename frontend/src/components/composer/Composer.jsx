@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { genXlsx } from "./genXlsx.js";
 import { genPdf } from "./genPdf.js";
 import "./Composer.css";
+import { API_BASE, getToken } from "../../lib/authApi";
 
 const Composer = ({ items, onRemove }) => {
   const [showDownloadOptions, setShowDownloadOptions] = useState(false);
@@ -117,10 +118,41 @@ const Composer = ({ items, onRemove }) => {
     };
   };
 
+  // Best-effort persistence: if the user is logged in, save this as a real
+  // encounter record so the Analytics dashboard reflects actual usage
+  // instead of staying empty. Never blocks or fails the download itself --
+  // this is purely additive.
+  const persistEncounter = () => {
+    const token = getToken();
+    if (!token || items.length === 0) return;
+
+    fetch(`${API_BASE}/encounters`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify({
+        patient: {
+          name: patientInfo.name || "Unknown",
+          email: patientInfo.email || undefined,
+          phone: patientInfo.phone || undefined,
+        },
+        diagnoses: items.map((item) => ({
+          namasteCode: item.nam_code || undefined,
+          icd11Code: item.icd_code || undefined,
+          namasteDisplay: item.display || item.title || undefined,
+          icd11Display: item.display || item.title || undefined,
+        })),
+      }),
+    }).catch((err) => console.error("Failed to save encounter:", err));
+  };
+
   const handleDownload = (format) => {
     console.log(`Downloading as ${format}`);
     setShowDownloadOptions(false);
-    
+    persistEncounter();
+
     try {
       const fhirBundle = generateFHIRBundle();
       

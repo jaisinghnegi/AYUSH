@@ -5,6 +5,8 @@ import HomePage from './pages/Home';
 import Login from './pages/login/login';
 import RegistrationPage from './pages/registration/registration';
 import Documentation from './pages/apidocumentation/documentation.jsx';
+import Coverage from './pages/coverage/Coverage.jsx';
+import Analytics from './pages/analytics/Analytics.jsx';
 
 const Router = () => {
   return (
@@ -16,6 +18,8 @@ const Router = () => {
         <Route path="/register" element={<RegistrationPage />} />
         <Route path="/home" element={<HomePage />} />
         <Route path="/docs" element={<Documentation />} />
+        <Route path="/coverage" element={<Coverage />} />
+        <Route path="/analytics" element={<Analytics />} />
         
         {/* Add your pages in a Route component like these: */}
         {/* 

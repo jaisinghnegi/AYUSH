@@ -65,6 +65,53 @@ class NamasteCode:
         return self.namc_code, None
 
 
+def _relevance_key(code: "NamasteCode", search_term: str) -> tuple[int, int]:
+    """Lower is more relevant. Mongo's regex $or has no notion of relevance,
+    so a search for a short canonical term like "jvara" can just as easily
+    surface a long compound entry like "yakShmajajvaraH" first (whichever
+    happened to be inserted earlier) -- which then tends to be missing a
+    description, since compound derivative entries are less likely to have
+    one filled in. Ranking exact/prefix matches first, then shortest match,
+    fixes both problems: the canonical entry surfaces, and it's more likely
+    to be the one that's actually documented.
+    """
+    term_lower = search_term.lower()
+    candidates = [
+        code.namc_term,
+        code.namc_term_diacritical,
+        code.namc_term_devanagari,
+        code.namc_code,
+    ]
+
+    best_rank = 3  # 0=exact, 1=starts-with, 2=word-boundary contains, 3=substring
+    shortest_len = 9999
+    for candidate in candidates:
+        if not candidate:
+            continue
+        candidate_lower = candidate.lower()
+        if term_lower not in candidate_lower:
+            continue
+        shortest_len = min(shortest_len, len(candidate))
+        if candidate_lower == term_lower:
+            best_rank = min(best_rank, 0)
+        elif candidate_lower.startswith(term_lower):
+            best_rank = min(best_rank, 1)
+        else:
+            best_rank = min(best_rank, 3)
+
+    return (best_rank, shortest_len)
+
+
+# Common alternate transliterations of Sanskrit terms that don't literally
+# match the codebook's own ASCII transliteration scheme (e.g. the codebook
+# spells it "vicarcikA", not "vicharchika"). Not an attempt at general
+# transliteration normalization -- just known gaps, added as they're found,
+# so a reasonable spelling still finds the real entry instead of nothing.
+COMMON_SEARCH_ALIASES: dict[str, str] = {
+    "vicharchika": "vicarcik",
+}
+
+
 class NamasteCodec:
     async def search_codes(self, filter: NamasteFilter, limit: Optional[int] = None) -> list[NamasteCode]:
         print(f"🔍 Searching NAMASTE codes with filter: {filter}")
@@ -77,23 +124,41 @@ class NamasteCodec:
 
         # Use regex search for better partial matching instead of text search.
         if filter.search_term:
-            query["$or"] = [
-                {"vyAdhi-viniScayaH": {"$regex": filter.search_term, "$options": "i"}},
-                {"vyādhi-viniścayaḥ": {"$regex": filter.search_term, "$options": "i"}},
-                {"व्याधि-विनिश्चयः": {"$regex": filter.search_term, "$options": "i"}},
-                {"AYU": {"$regex": filter.search_term, "$options": "i"}},
-            ]
+            search_terms = {filter.search_term}
+            alias = COMMON_SEARCH_ALIASES.get(filter.search_term.lower())
+            if alias:
+                search_terms.add(alias)
+
+            or_clauses = []
+            for term in search_terms:
+                or_clauses.extend(
+                    [
+                        {"vyAdhi-viniScayaH": {"$regex": term, "$options": "i"}},
+                        {"vyādhi-viniścayaḥ": {"$regex": term, "$options": "i"}},
+                        {"व्याधि-विनिश्चयः": {"$regex": term, "$options": "i"}},
+                        {"AYU": {"$regex": term, "$options": "i"}},
+                    ]
+                )
+            query["$or"] = or_clauses
 
         if filter.code:
             query["AYU"] = {"$regex": filter.code, "$options": "i"}
 
         print(f"📊 MongoDB NAMASTE query: {query}")
 
-        cursor = collection.find(query)
-        if limit is not None:
-            cursor = cursor.limit(limit)
+        # Fetch a wider pool than requested so relevance ranking (below) has
+        # something to actually rank -- capping at the DB layer before
+        # ranking would just return whatever Mongo happened to match first.
+        fetch_limit = max((limit or 20) * 5, 50)
+        cursor = collection.find(query).limit(fetch_limit)
 
         results = [NamasteCode.from_document(doc) async for doc in cursor]
+
+        if filter.search_term:
+            results.sort(key=lambda code: min(_relevance_key(code, term) for term in search_terms))
+
+        if limit is not None:
+            results = results[:limit]
 
         print(f"✅ Found {len(results)} NAMASTE codes")
         return results
