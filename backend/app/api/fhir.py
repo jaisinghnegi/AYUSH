@@ -16,12 +16,14 @@ from fastapi import APIRouter, Body, Depends
 from fastapi.responses import JSONResponse
 
 from app import config
-from app.auth.dependencies import get_optional_user_email
+from app.api.encounters import DiagnosisInput, _enrich_diagnosis
+from app.auth.dependencies import get_current_user_email, get_optional_user_email
 from app.codecs.icd import IcdCodec, IcdFilter
 from app.codecs.mapping import ICD11_TM2_SYSTEM, NAMASTE_SYSTEM, mapping_table
 from app.codecs.namaste import Language, NamasteCodec, NamasteFilter
 from app.codecs.semantic import semantic_search_by_text
 from app.db import audit, mongo, users
+from app.db import encounters as encounters_db
 
 router = APIRouter()
 
@@ -416,4 +418,124 @@ async def codesystem_lookup(
             "resourceType": "OperationOutcome",
             "issue": [{"severity": "error", "diagnostics": f"Unrecognized system: {system}"}],
         },
+    )
+
+
+@router.post("/")
+async def upload_fhir_bundle(
+    body: dict = Body(...),
+    email: str = Depends(get_current_user_email)
+) -> JSONResponse:
+    user = await users.get_user_by_email(email)
+    if not user:
+        return JSONResponse(status_code=401, content={"error": "User not found"})
+
+    if body.get("resourceType") != "Bundle":
+        return JSONResponse(
+            status_code=400,
+            content={
+                "resourceType": "OperationOutcome",
+                "issue": [{
+                    "severity": "error",
+                    "code": "invalid",
+                    "diagnostics": "Payload must be a FHIR Bundle"
+                }]
+            }
+        )
+
+    # Extract Patient and Diagnoses from Bundle entries
+    patient_info = {"name": "", "email": "", "phone": ""}
+    diagnoses_inputs = []
+
+    for entry in body.get("entry", []):
+        resource = entry.get("resource", {})
+        resource_type = resource.get("resourceType")
+
+        if resource_type == "Patient":
+            # Extract name
+            names = resource.get("name", [])
+            if names:
+                patient_info["name"] = names[0].get("text") or " ".join(names[0].get("given", []) + [names[0].get("family", "")])
+            
+            # Extract telecom
+            for telecom in resource.get("telecom", []):
+                system = telecom.get("system")
+                value = telecom.get("value")
+                if system == "email":
+                    patient_info["email"] = value
+                elif system == "phone":
+                    patient_info["phone"] = value
+
+        elif resource_type == "Condition":
+            # Extract dual codes from condition.code.coding
+            codings = resource.get("code", {}).get("coding", [])
+            namc_code = None
+            icd_code = None
+            namc_display = None
+            icd_display = None
+
+            for coding in codings:
+                sys = coding.get("system", "").lower()
+                code = coding.get("code")
+                display = coding.get("display") or resource.get("code", {}).get("text")
+
+                if "namaste" in sys:
+                    namc_code = code
+                    namc_display = display
+                elif "icd" in sys or "who.int" in sys:
+                    icd_code = code
+                    icd_display = display
+
+            diagnoses_inputs.append(DiagnosisInput(
+                namasteCode=namc_code,
+                icd11Code=icd_code,
+                namasteDisplay=namc_display,
+                icd11Display=icd_display
+            ))
+
+        elif resource_type == "Encounter":
+            # Extract dual codes from encounter.reasonCode
+            for reason in resource.get("reasonCode", []):
+                codings = reason.get("coding", [])
+                namc_code = None
+                icd_code = None
+                namc_display = None
+                icd_display = None
+
+                for coding in codings:
+                    sys = coding.get("system", "").lower()
+                    code = coding.get("code")
+                    display = coding.get("display") or reason.get("text")
+
+                    if "namaste" in sys:
+                        namc_code = code
+                        namc_display = display
+                    elif "icd" in sys or "who.int" in sys:
+                        icd_code = code
+                        icd_display = display
+
+                diagnoses_inputs.append(DiagnosisInput(
+                    namasteCode=namc_code,
+                    icd11Code=icd_code,
+                    namasteDisplay=namc_display,
+                    icd11Display=icd_display
+                ))
+
+    # If patient info is missing in the Bundle, look for subject reference or default to the user's details
+    if not patient_info["name"]:
+        patient_info["name"] = f"Patient for {user.name}"
+        patient_info["email"] = user.email
+
+    # Enrich and validate diagnoses
+    enriched_diagnoses = [_enrich_diagnosis(d) for d in diagnoses_inputs]
+
+    # Create the encounter record
+    encounter = await encounters_db.create_encounter(user.id, patient_info, enriched_diagnoses)
+    
+    return JSONResponse(
+        status_code=201,
+        content={
+            "message": "FHIR Bundle uploaded and ingested successfully",
+            "encounter": encounter.to_response()
+        }
     )
