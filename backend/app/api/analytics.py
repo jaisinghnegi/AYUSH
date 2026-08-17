@@ -14,6 +14,9 @@ router = APIRouter()
 
 
 @router.get("/analytics")
+@router.get("/insights")
+@router.get("/reports")
+@router.get("/morbidity-stats")
 async def analytics() -> JSONResponse:
     client = await mongo.get_instance()
     collection = client.database["encounters"]

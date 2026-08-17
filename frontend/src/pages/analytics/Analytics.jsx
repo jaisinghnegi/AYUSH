@@ -10,7 +10,7 @@ const Analytics = () => {
 
   useEffect(() => {
     let cancelled = false;
-    fetch(`${API_BASE}/analytics`)
+    fetch(`${API_BASE}/insights`)
       .then((res) => res.json())
       .then((json) => !cancelled && setData(json))
       .catch((err) => !cancelled && setError(err.message));

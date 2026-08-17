@@ -85,11 +85,11 @@ const Navbar = ({ isDarkMode, onToggleTheme }) => {
                         </a>
 
                         <a
-                            className={`nav-link ${isActive('/analytics')}`}
-                            href="/analytics"
+                            className={`nav-link ${isActive('/insights') || isActive('/analytics')}`}
+                            href="/insights"
                             onClick={(e) => {
                                 e.preventDefault();
-                                navigate('/analytics');
+                                navigate('/insights');
                                 setIsMenuOpen(false);
                             }}
                         >

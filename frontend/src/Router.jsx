@@ -20,6 +20,7 @@ const Router = () => {
         <Route path="/docs" element={<Documentation />} />
         <Route path="/coverage" element={<Coverage />} />
         <Route path="/analytics" element={<Analytics />} />
+        <Route path="/insights" element={<Analytics />} />
         
         {/* Add your pages in a Route component like these: */}
         {/* 
